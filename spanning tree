@@ -1,0 +1,105 @@
+import java.util.*;
+
+class Edge implements Comparable<Edge> {
+    int src, dest, weight;
+
+    public Edge(int src, int dest, int weight) {
+        this.src = src;
+        this.dest = dest;
+        this.weight = weight;
+    }
+
+    @Override
+    public int compareTo(Edge other) {
+        return Integer.compare(this.weight, other.weight);
+    }
+}
+
+class Graph {
+    private int V;
+    private List<List<Edge>> adjList;
+
+    public Graph(int V) {
+        this.V = V;
+        adjList = new ArrayList<>();
+        for (int i = 0; i < V; i++) {
+            adjList.add(new ArrayList<>());
+        }
+    }
+
+    public void addEdge(int src, int dest, int weight) {
+        adjList.get(src).add(new Edge(src, dest, weight));
+        adjList.get(dest).add(new Edge(dest, src, weight)); // Undirected graph
+    }
+
+    public List<Edge> getEdges(int v) {
+        return adjList.get(v);
+    }
+
+    public int getV() {
+        return V;
+    }
+}
+
+class PrimMST {
+    private Graph graph;
+
+    public PrimMST(Graph graph) {
+        this.graph = graph;
+    }
+
+    public List<Edge> primMST() {
+        boolean[] visited = new boolean[graph.getV()];
+        PriorityQueue<Edge> pq = new PriorityQueue<>(Comparator.comparingInt(e -> e.weight));
+        List<Edge> minSpanningTree = new ArrayList<>();
+
+        // Start with vertex 0
+        visited[0] = true;
+        pq.addAll(graph.getEdges(0));
+
+        while (!pq.isEmpty()) {
+            Edge edge = pq.poll();
+            int dest = edge.dest;
+
+            if (!visited[dest]) {
+                visited[dest] = true;
+                minSpanningTree.add(edge);
+                for (Edge nextEdge : graph.getEdges(dest)) {
+                    if (!visited[nextEdge.dest]) {
+                        pq.add(nextEdge);
+                    }
+                }
+            }
+        }
+
+        return minSpanningTree;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the number of vertices: ");
+        int V = scanner.nextInt();
+        Graph graph = new Graph(V);
+
+        System.out.println("Enter the weighted edges (src dest weight): ");
+        while (true) {
+            int src = scanner.nextInt();
+            int dest = scanner.nextInt();
+            int weight = scanner.nextInt();
+            if (src == -1 || dest == -1 || weight == -1) {
+                break;
+            }
+            graph.addEdge(src, dest, weight);
+        }
+
+        PrimMST primMST = new PrimMST(graph);
+        List<Edge> minSpanningTree = primMST.primMST();
+
+        System.out.println("Minimum Spanning Tree using Prim's Algorithm:");
+        for (Edge edge : minSpanningTree) {
+            System.out.println(edge.src + " - " + edge.dest + " : " + edge.weight);
+        }
+    }
+}
